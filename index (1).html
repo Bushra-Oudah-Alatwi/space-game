@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>مغامرة الفضاء</title>
+<style>
+  :root{
+    --bg:#05070f; --fg:#e8ecff; --accent:#5ad1ff; --danger:#ff5a7a; --card:#10142a;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);
+    font-family:'Tahoma','Segoe UI',sans-serif;overflow:hidden;touch-action:none;}
+  #wrap{position:relative;width:100%;height:100%;}
+  canvas{display:block;width:100%;height:100%;background:#05070f;}
+  #hud{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));
+    right:18px;font-size:22px;font-weight:bold;color:var(--accent);
+    text-shadow:0 0 8px rgba(90,209,255,.6);}
+  #title{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));
+    left:18px;font-size:16px;opacity:.7;}
+  #overlay{position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;gap:14px;
+    background:rgba(5,7,15,.88);}
+  #overlay h1{font-size:28px;margin:0;}
+  #overlay p{margin:0;opacity:.8;font-size:15px;max-width:320px;}
+  button{background:var(--accent);color:#06101c;border:none;border-radius:999px;
+    padding:14px 34px;font-size:17px;font-weight:bold;cursor:pointer;}
+  button:active{transform:scale(.96);}
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c"></canvas>
+  <div id="title">تفادي النيازك ☄️</div>
+  <div id="hud">النقاط: 0</div>
+  <div id="overlay">
+    <h1>🚀 مغامرة الفضاء</h1>
+    <p>حركي السفينة بإصبعك أو بالأسهم ⬅️➡️ وتفادي النيازك المتساقطة قدر ما تقدرين</p>
+    <button id="startBtn">ابدأ اللعب</button>
+  </div>
+</div>
+<script>
+(function(){
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const hud = document.getElementById('hud');
+  const overlay = document.getElementById('overlay');
+  const startBtn = document.getElementById('startBtn');
+  let W,H;
+
+  function resize(){
+    W = canvas.width = canvas.clientWidth * devicePixelRatio;
+    H = canvas.height = canvas.clientHeight * devicePixelRatio;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  let ship, meteors, stars, score, alive, spawnTimer, speedMul, lastTime;
+
+  function reset(){
+    ship = { x: W/2, y: H*0.85, r: 22*devicePixelRatio, targetX: W/2 };
+    meteors = [];
+    stars = [];
+    for(let i=0;i<70;i++){
+      stars.push({x:Math.random()*W, y:Math.random()*H, r:Math.random()*1.6+0.3, s:Math.random()*0.5+0.1});
+    }
+    score = 0;
+    alive = true;
+    spawnTimer = 0;
+    speedMul = 1;
+    lastTime = performance.now();
+  }
+
+  function spawnMeteor(){
+    const r = (14 + Math.random()*16) * devicePixelRatio;
+    meteors.push({
+      x: Math.random()*(W-2*r)+r,
+      y: -r,
+      r,
+      vy: (2 + Math.random()*2) * devicePixelRatio * speedMul,
+      rot: Math.random()*Math.PI*2,
+      vr: (Math.random()-0.5)*0.1
+    });
+  }
+
+  function dist(ax,ay,bx,by){ return Math.hypot(ax-bx, ay-by); }
+
+  function update(dt){
+    if(!alive) return;
+    speedMul += dt*0.00002;
+    score += dt*0.01;
+    hud.textContent = 'النقاط: ' + Math.floor(score);
+
+    ship.x += (ship.targetX - ship.x) * Math.min(1, dt*0.015);
+    ship.x = Math.max(ship.r, Math.min(W-ship.r, ship.x));
+
+    spawnTimer -= dt;
+    if(spawnTimer <= 0){
+      spawnMeteor();
+      spawnTimer = Math.max(260, 650 - speedMul*60);
+    }
+
+    for(const m of meteors){
+      m.y += m.vy * (dt*0.06);
+      m.rot += m.vr;
+    }
+    meteors = meteors.filter(m => m.y - m.r < H + 40);
+
+    for(const m of meteors){
+      if(dist(ship.x, ship.y, m.x, m.y) < ship.r*0.8 + m.r*0.75){
+        alive = false;
+        showGameOver();
+      }
+    }
+
+    for(const s of stars){
+      s.y += s.s * (dt*0.06);
+      if(s.y > H) s.y = 0;
+    }
+  }
+
+  function drawShip(){
+    ctx.save();
+    ctx.translate(ship.x, ship.y);
+    ctx.font = (ship.r*2.2) + 'px serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🚀', 0, 2);
+    ctx.restore();
+  }
+
+  function drawMeteor(m){
+    ctx.save();
+    ctx.translate(m.x, m.y);
+    ctx.rotate(m.rot);
+    ctx.font = (m.r*2.3) + 'px serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('☄️', 0, 0);
+    ctx.restore();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#05070f';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#ffffff';
+    for(const s of stars){
+      ctx.globalAlpha = 0.5 + Math.random()*0.3;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    for(const m of meteors) drawMeteor(m);
+    if(alive) drawShip();
+  }
+
+  function loop(now){
+    const dt = Math.min(50, now - lastTime);
+    lastTime = now;
+    update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function showGameOver(){
+    overlay.classList.remove('hidden');
+    overlay.innerHTML = '<h1>💥 انتهت اللعبة</h1>' +
+      '<p>نقاطك: ' + Math.floor(score) + '</p>' +
+      '<button id="retryBtn">إعادة المحاولة</button>';
+    document.getElementById('retryBtn').onclick = startGame;
+  }
+
+  function startGame(){
+    overlay.classList.add('hidden');
+    reset();
+  }
+
+  startBtn.onclick = startGame;
+
+  // controls
+  function setTarget(clientX){
+    const rect = canvas.getBoundingClientRect();
+    ship.targetX = (clientX - rect.left) * devicePixelRatio;
+  }
+  canvas.addEventListener('pointerdown', e=>{ if(alive) setTarget(e.clientX); });
+  canvas.addEventListener('pointermove', e=>{ if(alive && e.pressure>0) setTarget(e.clientX); });
+  window.addEventListener('keydown', e=>{
+    if(!alive) return;
+    const step = 40*devicePixelRatio;
+    if(e.key==='ArrowLeft') ship.targetX = Math.max(ship.r, ship.targetX - step);
+    if(e.key==='ArrowRight') ship.targetX = Math.min(W-ship.r, ship.targetX + step);
+  });
+
+  reset();
+  alive = false;
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
