@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>مغامرة الفضاء</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#05070f">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="مغامرة الفضاء">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
   :root{
     --bg:#05070f; --fg:#e8ecff; --accent:#5ad1ff; --danger:#ff5a7a; --card:#10142a;
@@ -28,6 +35,12 @@
   button{background:var(--accent);color:#06101c;border:none;border-radius:999px;
     padding:14px 34px;font-size:17px;font-weight:bold;cursor:pointer;}
   button:active{transform:scale(.96);}
+  .credits{margin-top:6px;background:rgba(90,209,255,.08);border:1px solid rgba(90,209,255,.35);
+    border-radius:16px;padding:12px 18px;line-height:1.9;font-size:15px;}
+  .credits b{color:var(--accent);}
+  .credits .who{color:#ffd166;font-weight:bold;}
+  #credit{position:absolute;bottom:calc(10px + env(safe-area-inset-bottom,0px));left:0;right:0;
+    text-align:center;font-size:12px;opacity:.55;pointer-events:none;}
   .hidden{display:none !important;}
 </style>
 </head>
@@ -35,11 +48,16 @@
 <div id="wrap">
   <canvas id="c"></canvas>
   <div id="title">تفادي النيازك ☄️</div>
+  <div id="credit">إعداد المعلمة بشرى العطوي • بمشاركة بتول وشادن</div>
   <div id="hud">النقاط: 0</div>
   <div id="overlay">
     <h1>🚀 مغامرة الفضاء</h1>
-    <p>حركي السفينة بإصبعك أو بالأسهم ⬅️➡️ وتفادي النيازك المتساقطة قدر ما تقدرين</p>
+    <p>حركي السفينة بإصبعك أو بالأسهم ⬅️➡️ وتفادي النيازك قدر ما تقدرين</p>
     <button id="startBtn">ابدأ اللعب</button>
+    <div class="credits">
+      <div>إعداد المعلمة: <span class="who">بشرى العطوي</span></div>
+      <div>بمشاركة الطالبتين: <span class="who">بتول</span> و <span class="who">شادن</span></div>
+    </div>
   </div>
 </div>
 <script>
@@ -74,15 +92,17 @@
     lastTime = performance.now();
   }
 
+  const THREATS = ['بشرى','ريهام','مها','رهف','بيان','علماء الغد','روابي','البندري','شادن','بتول'];
   function spawnMeteor(){
-    const r = (14 + Math.random()*16) * devicePixelRatio;
+    const r = (20 + Math.random()*12) * devicePixelRatio;
     meteors.push({
       x: Math.random()*(W-2*r)+r,
       y: -r,
       r,
       vy: (2 + Math.random()*2) * devicePixelRatio * speedMul,
       rot: Math.random()*Math.PI*2,
-      vr: (Math.random()-0.5)*0.1
+      vr: (Math.random()-0.5)*0.1,
+      label: THREATS[Math.floor(Math.random()*THREATS.length)]
     });
   }
 
@@ -110,9 +130,9 @@
     meteors = meteors.filter(m => m.y - m.r < H + 40);
 
     for(const m of meteors){
-      if(dist(ship.x, ship.y, m.x, m.y) < ship.r*0.8 + m.r*0.75){
+      if(alive && dist(ship.x, ship.y, m.x, m.y) < ship.r*0.8 + m.r*0.75){
         alive = false;
-        showGameOver();
+        showGameOver(m.label);
       }
     }
 
@@ -138,6 +158,22 @@
     ctx.font = (m.r*2.3) + 'px serif';
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('☄️', 0, 0);
+    ctx.restore();
+    // threat name under the meteor
+    const fs = 13*devicePixelRatio;
+    ctx.save();
+    ctx.font = 'bold ' + fs + 'px Tahoma, sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    const tw = ctx.measureText(m.label).width + 14*devicePixelRatio;
+    const ly = m.y + m.r + 10*devicePixelRatio;
+    const lx = Math.max(tw/2, Math.min(W - tw/2, m.x));
+    ctx.fillStyle = 'rgba(255,90,122,.92)';
+    const h = fs*1.6;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(lx - tw/2, ly - h/2, tw, h, h/2); else ctx.rect(lx - tw/2, ly - h/2, tw, h);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(m.label, lx, ly + 1);
     ctx.restore();
   }
 
@@ -165,11 +201,14 @@
     requestAnimationFrame(loop);
   }
 
-  function showGameOver(){
+  function showGameOver(hit){
     overlay.classList.remove('hidden');
     overlay.innerHTML = '<h1>💥 انتهت اللعبة</h1>' +
-      '<p>نقاطك: ' + Math.floor(score) + '</p>' +
-      '<button id="retryBtn">إعادة المحاولة</button>';
+      '<p>اصطدمتِ بنيزك: <b style="color:#ff5a7a">' + hit + '</b></p>' +
+      '<p style="font-size:20px;color:#5ad1ff;font-weight:bold">نقاطك: ' + Math.floor(score) + '</p>' +
+      '<button id="retryBtn">إعادة المحاولة</button>' +
+      '<div class="credits"><div>إعداد المعلمة: <span class="who">بشرى العطوي</span></div>' +
+      '<div>بمشاركة الطالبتين: <span class="who">بتول</span> و <span class="who">شادن</span></div></div>';
     document.getElementById('retryBtn').onclick = startGame;
   }
 
@@ -198,6 +237,12 @@
   alive = false;
   requestAnimationFrame(loop);
 })();
+</script>
+<script>
+  // تشغيل اللعبة بدون إنترنت بعد أول فتح
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  }
 </script>
 </body>
 </html>
