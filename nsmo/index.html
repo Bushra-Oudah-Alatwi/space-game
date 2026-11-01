@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>برنامج نسمو – المعلوماتية</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&display=swap">
+<style>
+:root{--bg:#f1f4f8;--card:#fff;--fg:#1f2a3a;--muted:#5a6678;--accent:#2f5d9e;--soft:#dde6f2}
+@media (prefers-color-scheme:dark){:root{--bg:#121820;--card:#1c2430;--fg:#e8eef6;--muted:#9fb0c6;--accent:#7fa8e0;--soft:#263244;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Tajawal",system-ui,sans-serif;line-height:1.75}
+.wrap{max-width:860px;margin:0 auto;padding:28px 16px 48px;display:flex;flex-direction:column;gap:20px}
+header{text-align:center}
+.school{color:var(--muted);font-weight:700}
+h1{color:var(--accent);font-size:clamp(28px,6vw,40px);margin:4px 0;line-height:1.3;font-weight:800}
+.tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.tag{background:var(--soft);padding:4px 14px;border-radius:20px;font-weight:700;font-size:15px}
+section{background:var(--card);border-radius:20px;padding:22px}
+h2{margin:0 0 8px;font-size:23px;color:var(--accent)}
+p,li{font-size:18px} p{margin:0 0 8px} ul{margin:0;padding-right:22px}
+.gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+figure{margin:0} figure img{width:100%;border-radius:14px;display:block}
+figcaption{font-size:16px;color:var(--muted);margin-top:6px}
+footer{text-align:center;color:var(--muted);font-size:15px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="school">متوسطة وثانوية علماء الغد — المهارات الرقمية</div>
+    <h1>برنامج نسمو – تخصص المعلوماتية</h1>
+    <div class="tags"><span class="tag">من ٢٣ / ٤ إلى ٤ / ٥ / ١٤٤٨هـ</span><span class="tag">٣ طالبات</span><span class="tag">المرحلة المتوسطة</span></div>
+  </header>
+  <section>
+    <h2>عن البرنامج</h2>
+    <p>تهيئة الطالبات للمشاركة في أولمبياد العلوم والرياضيات الوطني «نسمو» – مسابقة المدن والمحافظات، من خلال شرح الحقيبة العلمية لتخصص المعلوماتية المقدّمة من مؤسسة الملك عبدالعزيز ورجاله للموهبة والإبداع «موهبة».</p>
+    <ul>
+      <li>التعريف بأولمبياد نسمو ومراحله ومساراته.</li>
+      <li>الدرس الأول: كتابة أول برنامج Hello World.</li>
+      <li>الدرس الثاني: بنية الشيفرة البرمجية Code Structure.</li>
+      <li>تطبيق الأمثلة ومناقشة الطالبات.</li>
+    </ul>
+  </section>
+  <section>
+    <h2>صور تنفيذ البرنامج</h2>
+    <div class="gal">
+      <figure><img src="photo1.jpg" alt="افتتاحية شرح الحقيبة العلمية لأولمبياد نسمو على السبورة الذكية" loading="lazy"><figcaption>عرض افتتاحية شرح الحقيبة العلمية (نسمو – موهبة – وزارة التعليم).</figcaption></figure>
+      <figure><img src="photo2.jpg" alt="قائمة تشغيل شرح الحقيبة العلمية لتخصص المعلوماتية" loading="lazy"><figcaption>قائمة تشغيل شرح الحقيبة العلمية لتخصص المعلوماتية، ودروس Hello World و Code Structure.</figcaption></figure>
+    </div>
+  </section>
+  <footer>إعداد المعلمة: بشرى عوده العطوي</footer>
+</div>
+</body>
+</html>
